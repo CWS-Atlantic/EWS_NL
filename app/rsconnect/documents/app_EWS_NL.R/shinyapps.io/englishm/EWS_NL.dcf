@@ -1,0 +1,12 @@
+name: EWS_NL
+title: EWS_NL
+username: englishm
+account: englishm
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1663774
+bundleId: 8816059
+url: https://englishm.shinyapps.io/EWS_NL/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

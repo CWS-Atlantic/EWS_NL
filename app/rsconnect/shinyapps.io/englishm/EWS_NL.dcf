@@ -1,0 +1,12 @@
+name: EWS_NL
+title: EWS_NL
+username:
+account: englishm
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1663774
+bundleId: 8786944
+url: https://englishm.shinyapps.io/EWS_NL/
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: EWS_NL_AppData_2024-06-24.csv|Plots.csv
