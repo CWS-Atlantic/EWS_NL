@@ -209,7 +209,7 @@ require(leafpop)
 require(sf)
 
 #load in plots
-plots <- st_read(dsn = "C:/users/englishm/Documents/EWS/NL/NL EWS Shapefiles/EWS_NL_Ver18.shp")
+plots <- st_read(dsn = "C:/users/englishm/Documents/EWS/NL/NL EWS Shapefiles/EWS_NL_Ver18.shp")  #update directory when running locally
 
 plots <- st_transform(plots, 4326)
 
@@ -226,7 +226,7 @@ plots.24.cents <- st_centroid(plots.24)
 #st_write(plots.24, dsn = "EWS_NL_2024_Plots", driver = "ESRI Shapefile")
 
 
-## Read in NL wetlands that need to be photographed - from Tyler Kydd for 2024.
+## Read in NL wetlands that need to be photographed - from Tyler Kydd for 2024
 ## Check and see if there are updates for 2025!
 
 #Newfoundland
