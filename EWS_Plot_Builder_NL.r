@@ -209,7 +209,7 @@ require(leafpop)
 require(sf)
 
 #load in plots
-plots <- st_read(dsn = "C:/users/englishm/Documents/EWS/NL/NL EWS Shapefiles/EWS_NL_Ver18.shp")  #update directory when running locally
+plots <- st_read(dsn = "C:/users/englishm/Documents/EWS/NL/NL EWS Shapefiles/EWS_NL_Ver18.shp")  #update directory when running locally, see Data folder
 
 plots <- st_transform(plots, 4326)
 
