@@ -195,6 +195,13 @@ plotcove[pt24,32]=1
 pt25 = rbind(D,A)
 plotcove[pt25,33]=1
 
+pt26 = rbind(A,B)
+plotcove[pt26,34]=1
+
+pt27 = rbind(B,C)
+plotcove[pt27,35]=1
+
+
 rm(pt90,pt91,pt92,pt93,pt94,pt95,pt96,pt97,pt98,pt99,pt00,pt01,pt02,pt03,pt04,pt05,pt06)
 rm(pt07, pt08, pt09, pt10, pt11, pt12, pt13, pt14, pt15, pt16, pt17, pt18, pt19, pt22, pt23)
 
@@ -208,15 +215,21 @@ require(leaflet)
 require(leafpop)
 require(sf)
 
+#setwd("C:/Users/englishm/Documents/EWS/Shiny App/app/")
+
 #load in plots
-plots <- st_read("data/EWS_NL_Plots.gdb")  #update directory when running locally, see data folder
+plots <- st_read("app/data/EWS_NL_Plots.gdb")  #update directory when running locally, see data folder
 
 plots <- st_transform(plots, 4326)
 
 #subset plots for the given year
-plots.24 <- plots[plots$PLOT_NUM %in% pt24,]
+plots.24 <- plots[plots$plot %in% pt24,]
 
-plots.25 <- plots[plots$PLOT_NUM %in% pt25,]
+plots.25 <- plots[plots$plot %in% pt25,]
+
+plots.26 <- plots[plots$plot %in% pt26,]
+
+plots.27 <- plots[plots$plot %in% pt27,]
 
 #get centroids for the contract
 plots.24.cents <- st_centroid(plots.24)
@@ -264,7 +277,7 @@ leaflet(options = leafletOptions (minZoom = 2, maxZoom = 16)) %>%  #you can adju
               fillOpacity = 0.15,
               opacity = 1,
               weight = 1,
-              popup = popupTable(plots.25, zcol = c("PLOT_NUM", "PLOT", "UTM"), row.numbers = F, feature.id = F)) %>%
+              popup = popupTable(plots.25, zcol = c("plot", "plot_name", "utm"), row.numbers = F, feature.id = F)) %>%
   
   
   addCircleMarkers(data = nf.wetlands,
