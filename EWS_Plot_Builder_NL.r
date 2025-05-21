@@ -218,7 +218,7 @@ require(sf)
 #setwd("C:/Users/englishm/Documents/EWS/Shiny App/app/")
 
 #load in plots
-plots <- st_read("app/data/EWS_NL_Plots.gdb")  #update directory when running locally, see data folder
+plots <- st_read("C:/Users/englishm/Documents/EWS/Shiny App/app/data/EWS_NL_Plots.gdb")  #update directory when running locally, see data folder
 
 plots <- st_transform(plots, 4326)
 
@@ -232,7 +232,7 @@ plots.26 <- plots[plots$plot %in% pt26,]
 plots.27 <- plots[plots$plot %in% pt27,]
 
 #get centroids for the contract
-plots.24.cents <- st_centroid(plots.24)
+plots.25.cents <- st_centroid(plots.25)
 
 #write.csv(plots.24.cents, "EWS_NL_Plots_2024.csv")
 
