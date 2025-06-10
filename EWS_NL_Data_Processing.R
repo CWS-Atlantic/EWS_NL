@@ -4,6 +4,8 @@
 
 require(readr)
 require(dplyr)
+require(sf)
+require(stringr)
 
 #############################################
 ##  Read in current year's PC Mapper data  ##
@@ -12,7 +14,34 @@ require(dplyr)
 ews.2025 <- read.csv("V:/Sackville/Wildlife/Gamebird Management/Surveys/Breeding Surveys/EWS/EWS NL/EWS NL DATA 2025/Transcribed Data/EWS_NL_2025_Observations.csv",
                      encoding = "latin1")
 
+#deal with the June 3 dates:
+
+june3 <- ews.2025[ews.2025$day == 3,]
+
+june3$lat <- as.numeric(substr(june3$Latitude, 3, 9))
+
+june3$lon <- as.numeric(substr(june3$Longitude, 3, 8))
+
+
+june3.sf <- st_as_sf(june3, 
+                     coords = c("lon", "lat"),
+                     crs = 32620,
+                     agr = "constant",
+                     remove = FALSE)
+
+june3.sf <- st_transform(june3.sf, 4326)
+
+june3.coords <- st_coordinates(june3.sf)
+
+june3$lat <- june3.coords[,2]
+june3$lon <- june3.coords[,1]
+
+
 ##deal with lat-lon. Change from Deg Min Sec to Decimal Degrees
+
+#kick out June 3 data because theyre fixed above
+
+ews.2025 <- ews.2025[!ews.2025$day == 3,]
 
 #deal with latitude
 df <- as.data.frame(substr(ews.2025$Latitude, 3, 4))
@@ -55,9 +84,47 @@ df$lon <- (df$deg + df$min + df$sec) * -1
 #bind to obs file
 ews.2025$lon <- df$lon
 
+######################################
+##  Work with the whole data frame  ##
+######################################
+
+#bind back in the june3 data:
+ews.2025 <- rbind(june3, ews.2025)
+
+#order based on date
+ews.2025 <- ews.2025[order(ews.2025$month, ews.2025$day),]
+
+
 #kick out the 9999 obs
 
 ews.2025 <- ews.2025[!ews.2025$spp %in% "9999",]
+
+
+#check species names
+sort(unique(ews.2025$spp))
+
+#remove whitespace
+ews.2025$spp <- gsub(" ", "", ews.2025$spp)
+
+#edit some species names
+
+ews.2025$spp <- gsub("PTAR", "UNPT", ews.2025$spp) #Unknown Ptarmigan
+
+ews.2025$spp <- gsub("TERN", "UNTE", ews.2025$spp) #Unknown Tern
+
+#create total column
+ews.2025$tot <- ews.2025$mal + ews.2025$fem + ews.2025$unk
+
+ews.zeros <- ews.2025[ews.2025$tot == 0,]
+
+range(ews.2025$tot)
+
+#kick out other bad detections
+ews.2025 <- ews.2025[!ews.2025$detect == 9999,]
+
+#########################
+##  Format for export  ##
+#########################
 
 ews.2025 <-select(ews.2025,
                   Feature.ID,
@@ -76,6 +143,7 @@ ews.2025 <-select(ews.2025,
                   Date,
                   lat,
                   lon)
+
 
 write.csv(ews.2025, 
           "EWS_NL_2025_Observations_Clean.csv",
@@ -129,6 +197,7 @@ leaflet(options = leafletOptions (minZoom = 2, maxZoom = 16)) %>%  #you can adju
                    weight = 1,
                    #group = as.character(mydata.sf.m$Year),
                    popup = popupTable(ews.2025, zcol = c("plot", "spp", "mal", "fem", "unk", "Date"), row.numbers = F, feature.id = F))
+
 
 
 ###################################################
