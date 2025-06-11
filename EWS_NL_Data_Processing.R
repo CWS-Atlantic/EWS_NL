@@ -204,72 +204,86 @@ leaflet(options = leafletOptions (minZoom = 2, maxZoom = 16)) %>%  #you can adju
 ##  Read in EWS NL observation data master file  ##
 ###################################################
 
-ews.sf <- read_csv(file = "C:/Users/englishm/Documents/EWS/Shiny App/EWS_NL_24-06-2024.csv", col_types = cols(observation =  col_character()))
+##local file
+#ews.sf <- read_csv(file = "C:/Users/englishm/Documents/EWS/Shiny App/EWS_NL_24-06-2024.csv", col_types = cols(observation =  col_character()))
 
-ews.sf <-  ews.sf[order(ews.sf$year),] 
+##shared drive
+ews.sf <- read_csv(file = "V:/Sackville/Wildlife/Gamebird Management/Surveys/Breeding Surveys/EWS/EWS NL/Master Data/EWS_NL_Observations_1990-2025.csv", col_types = cols(observation =  col_character()))
+
+
+ews.sf <-  ews.sf[order(ews.sf$Year),] 
 
 
 #remove 9999 species
 ews.sf <- filter(ews.sf,
-                 species != "9999")
+                 Species_E != "9999")
 
-ews.sf$tot <- ews.sf$male + ews.sf$female + ews.sf$unknown
+ews.sf$tot <- ews.sf$Males + ews.sf$Females + ews.sf$Unknown
 
 
 #clean up some species names
-ews.sf$species <- gsub("wipt", "WIPT", ews.sf$species) #Willow Ptarmigan
+ews.sf$Species_E <- gsub("wipt", "WIPT", ews.sf$Species_E) #Willow Ptarmigan
 
-ews.sf$species <- gsub("PTAR", "UNPT", ews.sf$species) #Unknown Ptarmigan
+ews.sf$Species_E <- gsub("PTAR", "UNPT", ews.sf$Species_E) #Unknown Ptarmigan
 
-ews.sf$species <- gsub("MRAT", "MUSK", ews.sf$species) #Muskrat
+ews.sf$Species_E <- gsub("MRAT", "MUSK", ews.sf$Species_E) #Muskrat
 
-ews.sf$species <- gsub("PHAL", "UNPH", ews.sf$species) #Unknown Phalarope
+ews.sf$Species_E <- gsub("PHAL", "UNPH", ews.sf$Species_E) #Unknown Phalarope
 
-ews.sf$species <- gsub("OSPY", "OSPR", ews.sf$species) #Osprey
+ews.sf$Species_E <- gsub("OSPY", "OSPR", ews.sf$Species_E) #Osprey
 
-ews.sf$species <- gsub("OPSR", "OSPR", ews.sf$species) #Osprey
+ews.sf$Species_E <- gsub("OPSR", "OSPR", ews.sf$Species_E) #Osprey
 
-ews.sf$species <- gsub("lodg", "LODG", ews.sf$species) #Beaver Lodge
+ews.sf$Species_E <- gsub("lodg", "LODG", ews.sf$Species_E) #Beaver Lodge
 
-ews.sf$species <- gsub("UTER", "UNTE", ews.sf$species) #Unknown Tern
+ews.sf$Species_E <- gsub("UTER", "UNTE", ews.sf$Species_E) #Unknown Tern
 
-ews.sf$species <- gsub("TERN", "UNTE", ews.sf$species) #Unknown Tern
+ews.sf$Species_E <- gsub("TERN", "UNTE", ews.sf$Species_E) #Unknown Tern
 
-ews.sf$species <- gsub("UIDI", "UNDI", ews.sf$species) #Unknown Diver
+ews.sf$Species_E <- gsub("UIDI", "UNDI", ews.sf$Species_E) #Unknown Diver
 
-ews.sf$species <- gsub("NORA", "CORA", ews.sf$species) #Common Raven
+ews.sf$Species_E <- gsub("NORA", "CORA", ews.sf$Species_E) #Common Raven
 
-ews.sf$species <- gsub("UNSC", "USCO", ews.sf$species) #Unknown Scoter
+ews.sf$Species_E <- gsub("UNSC", "USCO", ews.sf$Species_E) #Unknown Scoter
 
-ews.sf$species <- gsub("HADU", "HARD", ews.sf$species) #Harlequin Duck
+ews.sf$Species_E <- gsub("HADU", "HARD", ews.sf$Species_E) #Harlequin Duck
 
-ews.sf$species <- gsub("WISN", "COSN", ews.sf$species) #Common Snipe
+ews.sf$Species_E <- gsub("WISN", "COSN", ews.sf$Species_E) #Common Snipe
 
-ews.sf$species <- gsub("NOBI", "AMBI", ews.sf$species) #American Bittern
+ews.sf$Species_E <- gsub("NOBI", "AMBI", ews.sf$Species_E) #American Bittern
 
-ews.sf$species <- gsub("BLBI", "BLBD", ews.sf$species) #Blackbird
+ews.sf$Species_E <- gsub("BLBI", "BLBD", ews.sf$Species_E) #Blackbird
 
-ews.sf$species <- gsub("BLBR", "BLBD", ews.sf$species) #Blackbird
+ews.sf$Species_E <- gsub("BLBR", "BLBD", ews.sf$Species_E) #Blackbird
 
-ews.sf$species <- gsub("GOHA", "NOGO", ews.sf$species) #Northern Goshawk
+ews.sf$Species_E <- gsub("GOHA", "NOGO", ews.sf$Species_E) #Northern Goshawk
 
-unique(ews.sf$species)
-
-#complete the cases of all species-plot-year matrix ##THIS IS WRONG BECAUSE IT DOESNT TAKE IN THE ROTATIONAL DESIGN
-
-ews.sf <- ews.sf %>% 
-  complete(species, plot)
-
-ews.sf <- ews.sf %>% 
-  rowwise() %>% 
-  mutate(tot = sum(male, female, unknown, na.rm = TRUE))
+ews.sf$Species_E <- gsub("GTBH", "GBHE", ews.sf$Species_E) #Great Blue Heron
 
 
-ews.sf <-  ews.sf[ews.sf$lat > 0,]
-ews.sf <-  ews.sf[ews.sf$lat < 70,]
+sort(unique(ews.sf$Species_E))
 
-#write.csv
-write.csv(ews.sf, "EWS_NL_2024_AllSpecies_noTIP.csv")
+####################################
+##  Complete species-plot matrix  ##
+####################################
+
+################# BROKEN AT THE MOMENT #######################
+
+##complete the cases of all species-plot-year matrix ##THIS IS WRONG BECAUSE IT DOESNT TAKE IN THE ROTATIONAL DESIGN
+#
+# ews.sf <- ews.sf %>% 
+#   complete(species, plot)
+#
+# ews.sf <- ews.sf %>% 
+#   rowwise() %>% 
+#   mutate(tot = sum(male, female, unknown, na.rm = TRUE))
+
+#remove any extra points outside of range - this shouldn't kick any out if the data are CLEAN
+ews.sf <-  ews.sf[ews.sf$LatObs > 0,]
+ews.sf <-  ews.sf[ews.sf$LatObs < 70,]
+
+# #write.csv
+# write.csv(ews.sf, "EWS_NL_2024_AllSpecies_noTIP.csv")
 
 
 ###############################
@@ -292,71 +306,73 @@ ews.nl.cond <- read.csv("C:/Users/englishm/Documents/EWS/NL/Processed Data/EWS_N
 ##############################
 
 
-#all species
-all.sp <- unique(ews.sf$species) 
-all.sp <- all.sp[order(all.sp)]
-
-
-waterfowl <- c("ABDU", 
-               "AGWT",
-               "AMWI",
-               "BAGO",
-               "BLSC",
-               "BUFF",
-               "BWTE",
-               "CAGO", 
-               "COGO", 
-               "COLO", 
-               "COME",
-               "GRSC",
-               "HARD",
-               "HOME",
-               "LESC",
-               "LTDU",
-               "MALL",
-               "NOPI",
-               "NSHO",
-               "RBME", 
-               "RNDU",
-               "RTLO",
-               "SUSC",
-               "USCA",
-               "WODU",
-               "WWSC")
-
-
-#waterbirds
-waterbirds <- c("COLO",
-                "DCCO",
-                "GBBG",
-                "HERG",
-                "RBGU",
-                "RTLO",
-                "TERN",
-                "UNPH")
-
-shorebirds <- c("COSN",
-                "SOSA",
-                "SPSA",
-                "UNYE")
-
-raptors <- c("BAEA",
-             "GHOW",
-             "NOHA",
-             "OSPR",
-             "RTHA")
-
-mammals <- c("BLBE",
-             "BEAV",
-             "CARI",
-             "COYT",
-             "MINK",
-             "MUSK",
-             "MOOS",
-             "PORC",
-             "RFOX",
-             "RIOT",
-             "WOLF")
+# #not necessary at this stage
+# 
+# #all species
+# all.sp <- unique(ews.sf$species) 
+# all.sp <- all.sp[order(all.sp)]
+# 
+# 
+# waterfowl <- c("ABDU", 
+#                "AGWT",
+#                "AMWI",
+#                "BAGO",
+#                "BLSC",
+#                "BUFF",
+#                "BWTE",
+#                "CAGO", 
+#                "COGO", 
+#                "COLO", 
+#                "COME",
+#                "GRSC",
+#                "HARD",
+#                "HOME",
+#                "LESC",
+#                "LTDU",
+#                "MALL",
+#                "NOPI",
+#                "NSHO",
+#                "RBME", 
+#                "RNDU",
+#                "RTLO",
+#                "SUSC",
+#                "USCA",
+#                "WODU",
+#                "WWSC")
+# 
+# 
+# #waterbirds
+# waterbirds <- c("COLO",
+#                 "DCCO",
+#                 "GBBG",
+#                 "HERG",
+#                 "RBGU",
+#                 "RTLO",
+#                 "TERN",
+#                 "UNPH")
+# 
+# shorebirds <- c("COSN",
+#                 "SOSA",
+#                 "SPSA",
+#                 "UNYE")
+# 
+# raptors <- c("BAEA",
+#              "GHOW",
+#              "NOHA",
+#              "OSPR",
+#              "RTHA")
+# 
+# mammals <- c("BLBE",
+#              "BEAV",
+#              "CARI",
+#              "COYT",
+#              "MINK",
+#              "MUSK",
+#              "MOOS",
+#              "PORC",
+#              "RFOX",
+#              "RIOT",
+#              "TIWO")
 
 
 ##########################
@@ -368,17 +384,23 @@ tip.code.df = read.csv(file = "C:/Users/englishm/Documents/EWS/Phenology/Indicat
 group.code.df = read.csv(file = "C:/Users/englishm/Documents/EWS/Phenology/GroupsID.csv",  stringsAsFactors= FALSE)
 
 
-#remove ghost levels
-tip.obs <- ews.sf[ews.sf$species %in% group.code.df$species,]
+#subset df based on TIP-only species
+tip.obs <- ews.sf[ews.sf$Species_E %in% group.code.df$species,]
+
+x <- tip.obs[is.na(tip.obs$Year),] # 0 results, good
+
+non.tip.obs <- ews.sf[!ews.sf$Species_E %in% group.code.df$species,]
+
+x <- non.tip.obs[is.na(non.tip.obs$Year),] # 152 results, why???, now 19, now 2, now 0
 
 #tip.obs <- ews.sf
 
-tip.obs$species <- as.factor(tip.obs$species)
+tip.obs$Species_E <- as.factor(tip.obs$Species_E)
 
 
-tip.obs$obscode <- paste(tip.obs$male, tip.obs$female, tip.obs$unknown, tip.obs$tot, sep="-")
+tip.obs$obscode <- paste(tip.obs$Males, tip.obs$Females, tip.obs$Unknown, tip.obs$tot, sep="-")
 
-tip.obs$species.id <- sapply(1:nrow(tip.obs), function(k){as.character(group.code.df$group[group.code.df$species==tip.obs$species[k]])})
+tip.obs$species.id <- sapply(1:nrow(tip.obs), function(k){as.character(group.code.df$group[group.code.df$species==tip.obs$Species_E[k]])})
 
 tip.obs$TIP <- sapply(1:nrow(tip.obs), function(k){tip.code.df[match(tip.obs$obscode[k],tip.code.df$obscode),tip.obs$species.id[k]]})
 
@@ -389,43 +411,81 @@ tip.obs$TIP <- sapply(1:nrow(tip.obs), function(k){tip.code.df[match(tip.obs$obs
 tip.obs$TIP[is.na(tip.obs$TIP)] <- 0
 tip.obs$groups <- ifelse (tip.obs$TIP == 0, tip.obs$tot, 0)
 
+non.tip.obs$TIP <- NA
+
+#filter out some columns we dont need for the APP:
+non.tip.obs <- select(non.tip.obs,
+                  #index,
+                  #survey,
+                  Year,
+                  Month,
+                  Day,
+                  Plot,
+                  Species_E,
+                  LatObs,
+                  LongObs,
+                  Males,
+                  Females,
+                  Unknown,
+                  tot,
+                  TIP,
+                  #groups,
+                  #mxSpptemp,
+                  BreedType,
+                  BreedCnt,
+                  Detection,
+                  Comment)
+
 
 #filter out some columns we dont need for the APP:
 tip.obs <- select(tip.obs,
-                  index,
-                  survey,
-                  year,
-                  month,
-                  day,
-                  plot,
-                  species,
-                  male,
-                  female,
-                  unknown,
+                  #index,
+                  #survey,
+                  Year,
+                  Month,
+                  Day,
+                  Plot,
+                  Species_E,
+                  LatObs,
+                  LongObs,
+                  Males,
+                  Females,
+                  Unknown,
                   tot,
                   TIP,
-                  groups,
-                  mxSpptemp,
-                  breed_type,
-                  breed_cnt,
-                  det_obs,
-                  comment,
-                  lat,
-                  lon)
+                  #groups,
+                  #mxSpptemp,
+                  BreedType,
+                  BreedCnt,
+                  Detection,
+                  Comment)
+
+
+#bind the dataframes back together
+
+ews.sf.app <- rbind(tip.obs, non.tip.obs)
+
+#organize DF
+
+ews.sf.app <-  ews.sf.app[order(ews.sf.app$Year, ews.sf.app$Plot),] 
+
+
+#rename specific column:
+names(ews.sf.app)[names(tip.obs) == 'tot'] <- 'total'
 
 
 #write out TIP data:
-write.csv(tip.obs, "EWS_NL_AppData_2024-06-24.csv")
+write.csv(ews.sf.app, "EWS_NL_AppData_2025-06-11.csv")
 
 # convert ews to a sf
-ews.sf <- st_as_sf(tip.obs, 
-                   coords = c("lon", "lat"), 
-                   crs = 4326, 
-                   agr = "constant", 
-                   remove = FALSE)
+ews.sf.app <- st_as_sf(ews.sf.app, 
+                       coords = c("LongObs", "LatObs"), 
+                       crs = 4326, 
+                       agr = "constant", 
+                       remove = FALSE)
 
-ews.sf <-  ews.sf[ews.sf$lat > 0,]
-ews.sf <-  ews.sf[ews.sf$lat < 70,]
+ews.sf.app <-  ews.sf.app[ews.sf.app$LatObs > 0,]
+ews.sf.app <-  ews.sf.app[ews.sf.app$LatObs < 70,]
 
 
-st_write(ews.sf, layer = "EWS_Obs", dsn = "EWS_NL_AppData_2024-06-24.gdb", driver = "OpenFileGDB", append = F)
+st_write(ews.sf.app, layer = "EWS_Obs", dsn = "EWS_NL_AppData_2025-06-11.gdb", driver = "OpenFileGDB", append = F)
