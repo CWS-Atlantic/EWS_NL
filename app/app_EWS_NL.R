@@ -8,7 +8,7 @@ require(leafpop)
 require(mapedit)  ##make sure you have the most recent version ## remotes::install_github("r-spatial/mapedit") 
 require(miniUI)
 require(RColorBrewer)
-require(readr)
+#require(readr)
 require(sf)
 require(shiny)
 require(shinyWidgets)
@@ -37,14 +37,12 @@ require(tidyr)
 #                    agr = "constant", 
 #                    remove = FALSE)
 
-ews.sf <- st_read("data/EWS_NL_AppData_2024-06-24.gdb")
-
+ews.sf <- st_read("data/EWS_NL_AppData_2025-06-11.gdb")
+  
 ews.sf <- st_transform(ews.sf, 4326)
 
 #do some renaming
 names(ews.sf)[names(ews.sf) == 'TIP'] <- 'tip'
-
-names(ews.sf)[names(ews.sf) == 'tot'] <- 'total'
 
 
 ##############################
@@ -90,7 +88,8 @@ waterbirds <- c("COLO",
                 "HERG",
                 "RBGU",
                 "RTLO",
-                "TERN",
+                "SACR",
+                "UNTE",
                 "UNPH")
 
 shorebirds <- c("COSN",
@@ -114,7 +113,7 @@ mammals <- c("BLBE",
              "PORC",
              "RFOX",
              "RIOT",
-             "WOLF")
+             "TIWO")
 
 
 #####################################
@@ -188,7 +187,7 @@ ui <- miniPage(
              ".shiny-output-error { visibility: hidden; }",
              ".shiny-output-error:before { visibility: hidden; }"),
   
-  gadgetTitleBar("EWS Data from 1990-2024", left = NULL, right = NULL),
+  gadgetTitleBar("EWS Data from 1990-2025", left = NULL, right = NULL),
   
   miniTabstripPanel(
     
@@ -239,8 +238,8 @@ ui <- miniPage(
                                  HTML('<button data-toggle="collapse" data-target="#dataselect">-</button>'),
                                  tags$div(id = 'dataselect',  class="collapse-in"),
                                  
-                                 sliderInput("range", "Years", min(ews.sf$year), max(ews.sf$year),
-                                             value = range(ews.sf$year), step = 1, width = "96%"),
+                                 sliderInput("range", "Years", min(ews.sf$Year), max(ews.sf$Year),
+                                             value = range(ews.sf$Year), step = 1, width = "96%"),
                                  
                                  pickerInput("waterfowlInput", "Waterfowl", waterfowl,
                                              selected = "ABDU", multiple = T,
@@ -288,16 +287,16 @@ server <- function(input, output, session) {
     
     if(input$radio=="Plot"){
       pal <- colorFactor(palette = 'Set3',
-                         domain = ews.sf$plot
+                         domain = ews.sf$Plot
       )
-      return(pal(ews.sf$plot))
+      return(pal(ews.sf$Plot))
     } 
     
     else if(input$radio=="Year"){
       pal <- colorFactor(palette = 'Set3',
-                         domain = ews.sf$year
+                         domain = ews.sf$Year
       )
-      return(pal(ews.sf$year))
+      return(pal(ews.sf$Year))
     }
   })
   
@@ -308,16 +307,16 @@ server <- function(input, output, session) {
   
   #setup a reactive dataset that filters the data based on the year selection on the slider
   filteredData <- reactive({
-    ews.sf[ews.sf$year >= input$range[1] & ews.sf$year <= input$range[2],]
+    ews.sf[ews.sf$Year >= input$range[1] & ews.sf$Year <= input$range[2],]
   }) 
   
   #do the same but for selected species
   filteredSpecies <- reactive({
-    filteredData()[filteredData()$species %in% c(input$waterfowlInput, 
-                                                 input$mammalsInput, 
-                                                 input$waterbirdsInput,
-                                                 input$raptorsInput,
-                                                 input$shorebirdsInput),]
+    filteredData()[filteredData()$Species_E %in% c(input$waterfowlInput, 
+                                                   input$mammalsInput, 
+                                                   input$waterbirdsInput,
+                                                   input$raptorsInput,
+                                                   input$shorebirdsInput),]
   })
   
   #create the leaflet basemap with plots drawing tools
@@ -388,7 +387,7 @@ server <- function(input, output, session) {
                          radius = ~ 2 + 3*(ews.sf$tip), 
                          group = ews.sf$over,
                          clusterOptions = markerClusterOptions(freezeAtZoom = 9, spiderfyDistanceMultiplier = 1.25),
-                         popup = popupTable(ews.sf, zcol = c("year", "plot", "species", "survey", "total", "tip"), row.numbers = F, feature.id = F))
+                         popup = popupTable(ews.sf, zcol = c("Year", "Plot", "Species_E", "total", "tip"), row.numbers = F, feature.id = F))
     }
     
     else if(mapzoom() %in% z.high) {
@@ -401,8 +400,8 @@ server <- function(input, output, session) {
         lngRng <- range(bounds$east, bounds$west)
         
         subset(filteredSpecies(),
-               lat >= latRng[1]  & lat <= latRng[2]  &
-                 lon >= lngRng[1]  & lon <= lngRng[2])
+               LatObs >= latRng[1]  & LatObs <= latRng[2]  &
+                 LongObs >= lngRng[1]  & LongObs <= lngRng[2])
       })
       
       observe({
@@ -411,16 +410,16 @@ server <- function(input, output, session) {
           
           if(input$radio=="Plot"){
             pal <- colorFactor(palette = 'Set3',
-                               domain = mydata.react()$plot
+                               domain = mydata.react()$Plot
             )
-            return(pal(mydata.react()$plot))
+            return(pal(mydata.react()$Plot))
           }
           
           else if(input$radio=="Year"){
             pal <- colorFactor(palette = 'Set3',
-                               domain = mydata.react()$year
+                               domain = mydata.react()$Year
             )
-            return(pal(mydata.react()$year))
+            return(pal(mydata.react()$Year))
           }
         })
         
@@ -435,13 +434,13 @@ server <- function(input, output, session) {
           addCircleMarkers(data = mydata.react(),
                            fillColor = ~selectedPal.High(),
                            radius = ~ 2 + 3*(mydata.react()$tip),
-                           lng = mydata.react()$lon,
-                           lat = mydata.react()$lat,
+                           lng = mydata.react()$LongObs,
+                           lat = mydata.react()$LatObs,
                            fillOpacity = 0.75,
                            color = "black",
                            weight = 1,
                            group = mydata.react()$over,
-                           popup = popupTable(mydata.react(), zcol = c("year", "plot", "species", "survey", "total", "tip"), row.numbers = F, feature.id = F))
+                           popup = popupTable(mydata.react(), zcol = c("Year", "Plot", "Species_E", "total", "tip"), row.numbers = F, feature.id = F))
       })  
     }
   }) 
@@ -453,22 +452,22 @@ server <- function(input, output, session) {
   
   #setup a reactive dataset that filters the data based on the year selection on the slider
   filteredData.Graph <- reactive({
-    ews.data.sf[ews.data.sf$year >= input$range[1] & ews.data.sf$year <= input$range[2],]
+    ews.data.sf[ews.data.sf$Year >= input$range[1] & ews.data.sf$Year <= input$range[2],]
   }) 
   
   #do the same but for selected species
   filteredSpecies.Graph <- reactive({
-    filteredData.Graph()[filteredData.Graph()$species %in% c(input$waterfowlInput, 
-                                                             input$mammalsInput, 
-                                                             input$waterbirdsInput,
-                                                             input$raptorsInput,
-                                                             input$shorebirdsInput),]
+    filteredData.Graph()[filteredData.Graph()$Species_E %in% c(input$waterfowlInput, 
+                                                               input$mammalsInput, 
+                                                               input$waterbirdsInput,
+                                                               input$raptorsInput,
+                                                               input$shorebirdsInput),]
   })
   
   ews.sum <- reactive({
     
     df <- filteredSpecies.Graph() %>%
-      group_by(year,plot) %>%
+      group_by(Year, Plot) %>%
       dplyr::summarise(tip_sum = sum(tip, na.rm = T))
     
     return(df)
@@ -480,13 +479,13 @@ server <- function(input, output, session) {
     
     df <- as.data.frame(st_intersection(edits()$finished, filteredSpecies.Graph()))
     
-    df <- dplyr::select(df, year, plot, species, total, tip)
+    df <- dplyr::select(df, Year, Plot, Species_E, total, tip)
     
     df <- df %>%
-      group_by(year) %>%
-      dplyr::summarise(tip_sum = sum(tip, na.rm = T)/(length(unique(plot))),
+      group_by(Year) %>%
+      dplyr::summarise(tip_sum = sum(tip, na.rm = T)/(length(unique(Plot))),
                        # tip_density = tip_sum/(length(unique(plot))),
-                       total_birds = sum(total)/(length(unique(plot))))
+                       total_birds = sum(total)/(length(unique(Plot))))
     
     df
   })
@@ -507,18 +506,18 @@ server <- function(input, output, session) {
   selectedFiveYear <- reactive({ 
     
     #create an object that captures the range of the last 5 years of survey in the selected area
-    fiveYears <- (max(selectedLocations.Plot()$year) - 4) : max(selectedLocations.Plot()$year)
+    fiveYears <- (max(selectedLocations.Plot()$Year) - 4) : max(selectedLocations.Plot()$Year)
     
     if(input$dataInput=="TIP"){
       
-      df <- selectedLocations.Plot()[selectedLocations.Plot()$year %in% fiveYears,]
+      df <- selectedLocations.Plot()[selectedLocations.Plot()$Year %in% fiveYears,]
       return(df$tip_sum)
       
     } 
     
     else if(input$dataInput=="Total Birds"){
       
-      df <- selectedLocations.Plot()[selectedLocations.Plot()$year %in% fiveYears,]
+      df <- selectedLocations.Plot()[selectedLocations.Plot()$Year %in% fiveYears,]
       return(df$total_birds)
       
     }
@@ -536,7 +535,7 @@ server <- function(input, output, session) {
       p <- ggplot() + 
         
         geom_point(data = selectedLocations.Plot(), 
-                   aes(x = as.numeric(year), 
+                   aes(x = as.numeric(Year), 
                        y = selectedData()), 
                    colour = "black",
                    fill = "grey",
@@ -546,7 +545,7 @@ server <- function(input, output, session) {
         
         #raw data line
         geom_smooth(data = selectedLocations.Plot(),
-                    aes(x = as.numeric(year),
+                    aes(x = as.numeric(Year),
                         y = selectedData(),
                         linetype = "Loess Line",
                         colour = "Loess Line"),
@@ -555,7 +554,7 @@ server <- function(input, output, session) {
         
         #add the trend line over the selected area
         geom_line(data = selectedLocations.Plot(),
-                  aes(x = as.numeric(year),
+                  aes(x = as.numeric(Year),
                       y = mean(selectedData()),
                       linetype = "Mean of Selection",
                       colour = "Mean of Selection"),
@@ -564,7 +563,7 @@ server <- function(input, output, session) {
         
         #add the trend line for the 5 year average
         geom_line(data = selectedLocations.Plot(),
-                  aes(x = as.numeric(year),
+                  aes(x = as.numeric(Year),
                       y = mean(selectedFiveYear()),
                       linetype = "5-Yr Average",
                       colour = "5-Yr Average"),
@@ -573,7 +572,7 @@ server <- function(input, output, session) {
         
         #this is broken for total birds - only works on TIP
         geom_line(data =  ews.sum(),
-                  aes(x = as.numeric(year),
+                  aes(x = as.numeric(Year),
                       y = mean(ews.sum()$tip_sum, na.rm = T),
                       linetype = "Entire Survey",
                       colour = "Entire Survey"),
@@ -643,7 +642,7 @@ server <- function(input, output, session) {
                "Species list is as follows: <br/>", 
                "<br/>",
                sep = "<br/>"),
-         as.list(unique(ews.sf$species)))
+         as.list(sort(unique(ews.sf$Species_E))))
   })
   
 }

@@ -5,7 +5,7 @@ account: englishm
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1663774
-bundleId: 8816059
+bundleId: 10439832
 url: https://englishm.shinyapps.io/EWS_NL/
 version: 1
 asMultiple: FALSE
